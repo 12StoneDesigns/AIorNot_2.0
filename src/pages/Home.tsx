@@ -1,10 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import Hero from '../components/layout/Hero';
-import MediaUpload from '../components/features/MediaUpload';
-import AnalysisResult from '../components/features/AnalysisResult';
-import { analyzeImage } from '../services/aiDetectionService';
-import { analyzeUrl } from '../services/urlAnalysisService';
 import type { AnalysisState } from '../types/analysis';
+
+// Lazy load ML-heavy components and their services
+const MediaUpload = lazy(() => import('../components/features/MediaUpload'));
+const AnalysisResult = lazy(() => import('../components/features/AnalysisResult'));
+
+// Lazy load services
+const loadServices = async () => {
+  const [aiService, urlService] = await Promise.all([
+    import('../services/aiDetectionService'),
+    import('../services/urlAnalysisService')
+  ]);
+  return {
+    analyzeImage: aiService.analyzeImage,
+    analyzeUrl: urlService.analyzeUrl
+  };
+};
+
+// Loading component
+const ComponentLoader = () => (
+  <div className="flex items-center justify-center p-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#00F3FF]"></div>
+  </div>
+);
 
 const Home: React.FC = () => {
   const [analysisState, setAnalysisState] = useState<AnalysisState>({
@@ -17,13 +36,15 @@ const Home: React.FC = () => {
     setAnalysisState({ ...analysisState, isLoading: true, error: null });
 
     try {
+      // Load services dynamically
+      const services = await loadServices();
       let result;
       
       if (file) {
-        result = await analyzeImage(file);
+        result = await services.analyzeImage(file);
         console.log('Processing file:', file.name);
       } else if (url) {
-        result = await analyzeUrl(url);
+        result = await services.analyzeUrl(url);
         console.log('Processing URL:', url);
       } else {
         throw new Error('Please provide either a file or URL to analyze.');
@@ -60,7 +81,9 @@ const Home: React.FC = () => {
 
           <div className="space-y-8">
             <div className="bg-[#1A1A1F] p-6 rounded-xl border border-[#00F3FF]/30">
-              <MediaUpload onMediaSelect={handleMediaSelect} />
+              <Suspense fallback={<ComponentLoader />}>
+                <MediaUpload onMediaSelect={handleMediaSelect} />
+              </Suspense>
             </div>
             
             {analysisState.error && (
@@ -71,10 +94,12 @@ const Home: React.FC = () => {
 
             {(analysisState.isLoading || analysisState.result) && (
               <div className="bg-[#1A1A1F] p-6 rounded-xl border border-[#00F3FF]/30">
-                <AnalysisResult 
-                  result={analysisState.result}
-                  isLoading={analysisState.isLoading}
-                />
+                <Suspense fallback={<ComponentLoader />}>
+                  <AnalysisResult 
+                    result={analysisState.result}
+                    isLoading={analysisState.isLoading}
+                  />
+                </Suspense>
               </div>
             )}
           </div>
