@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#0A0A0F] text-white;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-[#1A1A1F] rounded-lg p-6 shadow-lg;
+  }
+
+  .neon-border {
+    @apply border border-[#00F3FF] border-opacity-30;
+  }
+
+  .neon-text {
+    @apply text-[#39FF14];
+  }
+
+  .btn {
+    @apply px-4 py-2 rounded-md transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-[#00F3FF] text-black hover:bg-[#00D3FF];
+  }
+
+  .btn-secondary {
+    @apply border border-[#00F3FF] text-[#00F3FF] hover:bg-[#00F3FF] hover:bg-opacity-10;
+  }
+}
+
+/* Custom animations */
+@keyframes neonPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-neon {
+  animation: neonPulse 2s ease-in-out infinite;
+}

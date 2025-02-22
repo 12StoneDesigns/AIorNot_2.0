@@ -33,7 +33,7 @@ export async function preprocessImage(imageData: ImageData | HTMLImageElement): 
   tensor.dispose();
   resized.dispose();
   
-  return normalized;
+  return normalized as tf.Tensor3D;
 }
 
 export async function analyzeImageTensor(tensor: tf.Tensor3D): Promise<{
