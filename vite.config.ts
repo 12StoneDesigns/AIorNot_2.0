@@ -5,8 +5,15 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  css: {
+    modules: {
+      localsConvention: 'camelCase',
+      scopeBehaviour: 'local',
+    },
+  },
   build: {
-    chunkSizeWarningLimit: 1600, // Increased to accommodate ML libraries
+    chunkSizeWarningLimit: 1600,
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -51,8 +58,6 @@ export default defineConfig({
           if (id.includes('@heroicons/')) {
             return 'vendor-ui';
           }
-
-          // Dynamic imports for route chunks are handled automatically
         },
         // Optimize chunk loading order
         chunkFileNames: (chunkInfo) => {
@@ -69,7 +74,13 @@ export default defineConfig({
             return `assets/tf/[name]-[hash].js`;
           }
           return 'assets/[name]-[hash].js';
-        }
+        },
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name.endsWith('.css')) {
+            return 'assets/css/[name]-[hash][extname]';
+          }
+          return 'assets/[name]-[hash][extname]';
+        },
       },
     },
   },
@@ -80,6 +91,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['react', 'react-dom'],
-    exclude: ['@tensorflow/tfjs'] // Prevent TF.js from being pre-bundled
+    exclude: ['@tensorflow/tfjs']
   }
 })
