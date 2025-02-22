@@ -6,22 +6,70 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   build: {
-    chunkSizeWarningLimit: 1000, // Increase from default 500kb to 1000kb
+    chunkSizeWarningLimit: 1600, // Increased to accommodate ML libraries
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Split React and ReactDOM into a separate vendor chunk
-          'vendor-react': ['react', 'react-dom'],
-          // Split TensorFlow.js into its own chunk
-          'vendor-tensorflow': [
-            '@tensorflow/tfjs',
-            '@tensorflow/tfjs-core',
-            '@tensorflow/tfjs-backend-cpu',
-            '@tensorflow/tfjs-backend-webgl'
-          ],
-          // Group other major dependencies
-          'vendor-utils': ['@heroicons/react'],
+        manualChunks(id) {
+          // React and related packages
+          if (id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/scheduler/')) {
+            return 'vendor-react';
+          }
+
+          // TensorFlow.js core functionality
+          if (id.includes('@tensorflow/tfjs-core')) {
+            return 'tf-core';
+          }
+
+          // TensorFlow.js CPU backend
+          if (id.includes('@tensorflow/tfjs-backend-cpu')) {
+            return 'tf-backend-cpu';
+          }
+
+          // TensorFlow.js WebGL backend
+          if (id.includes('@tensorflow/tfjs-backend-webgl')) {
+            return 'tf-backend-webgl';
+          }
+
+          // TensorFlow.js layers
+          if (id.includes('@tensorflow/tfjs-layers')) {
+            return 'tf-layers';
+          }
+
+          // TensorFlow.js data
+          if (id.includes('@tensorflow/tfjs-data')) {
+            return 'tf-data';
+          }
+
+          // TensorFlow.js converter
+          if (id.includes('@tensorflow/tfjs-converter')) {
+            return 'tf-converter';
+          }
+
+          // UI Components and utilities
+          if (id.includes('@heroicons/')) {
+            return 'vendor-ui';
+          }
+
+          // Dynamic imports for route chunks are handled automatically
         },
+        // Optimize chunk loading order
+        chunkFileNames: (chunkInfo) => {
+          const tfChunks = [
+            'tf-core',
+            'tf-backend-cpu',
+            'tf-backend-webgl',
+            'tf-layers',
+            'tf-data',
+            'tf-converter'
+          ];
+          
+          if (tfChunks.includes(chunkInfo.name)) {
+            return `assets/tf/[name]-[hash].js`;
+          }
+          return 'assets/[name]-[hash].js';
+        }
       },
     },
   },
@@ -30,4 +78,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom'],
+    exclude: ['@tensorflow/tfjs'] // Prevent TF.js from being pre-bundled
+  }
 })
