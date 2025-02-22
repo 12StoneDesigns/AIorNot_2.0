@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Header from './components/layout/Header';
+import Hero from './components/layout/Hero'; // Import the Hero component
 import Footer from './components/layout/Footer';
 import MediaUpload from './components/features/MediaUpload';
 import AnalysisResult from './components/features/AnalysisResult';
@@ -50,6 +51,7 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col bg-[#0A0A0F]">
       <Header />
+      <Hero /> {/* Add the Hero component here */}
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">

@@ -1,4 +1,3 @@
-import { analyzeImage } from './aiDetectionService';
 import { analyzeVideo } from './videoUtils';
 import type { VideoMetadata } from '../types/video';
 
@@ -40,8 +39,6 @@ export async function analyzeUrl(url: string): Promise<{
 
 function extractVideoMetadata(url: string): VideoMetadata | null {
   try {
-    const urlObj = new URL(url);
-    
     // YouTube handling
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
       const id = extractYouTubeId(url);
@@ -167,13 +164,4 @@ function extractTikTokId(url: string): string {
     console.error('Error extracting TikTok ID:', error);
     return '';
   }
-}
-
-async function getVideoSourceUrl(metadata: VideoMetadata): Promise<string> {
-  // Return a valid TikTok embed URL
-  if (metadata.platform === 'TikTok') {
-    return `https://www.tiktok.com/embed/${metadata.id}`;
-  }
-  // Placeholder for other platforms
-  return `https://example.com/video/${metadata.id}`;
 }
